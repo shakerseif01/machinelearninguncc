@@ -1,3 +1,4 @@
+#1a
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -76,4 +77,559 @@ plt.ylabel('Cost')
 plt.title('Training and Evaluation Loss Over Iterations')
 plt.legend()
 plt.show()
+#1b
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+
+# Load the housing dataset
+data = pd.read_csv('Housing.csv')
+
+# Define the features and target variable
+features = ['area', 'bedrooms', 'bathrooms', 'stories', 'mainroad', 
+            'guestroom', 'basement', 'hotwaterheating', 'airconditioning', 
+            'parking', 'prefarea']
+target = 'price'
+
+# Convert categorical features to numerical
+binary_features = ['mainroad', 'guestroom', 'basement', 'hotwaterheating', 'airconditioning', 'prefarea']
+for feature in binary_features:
+    data[feature] = data[feature].map({'yes': 1, 'no': 0})
+
+# Extract features and target
+X = data[features].values
+y = data[target].values
+
+# Split the data into training and evaluation sets
+X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Normalize the feature values
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_val_scaled = scaler.transform(X_val)
+
+# Add a column of ones to include the intercept term
+X_train_scaled = np.c_[np.ones(X_train_scaled.shape[0]), X_train_scaled]
+X_val_scaled = np.c_[np.ones(X_val_scaled.shape[0]), X_val_scaled]
+
+# Function to compute predictions
+def predict(X, theta):
+    return X @ theta
+
+# Function to compute the cost (mean squared error)
+def compute_cost(X, y, theta):
+    m = len(y)
+    predictions = predict(X, theta)
+    return (1 / (2 * m)) * np.sum((predictions - y) ** 2)
+
+# Gradient descent function to optimize parameters
+def gradient_descent(X_train, y_train, X_val, y_val, theta, learning_rate, iterations):
+    m_train = len(y_train)
+    train_costs = []
+    val_costs = []
+
+    for i in range(iterations):
+        gradients = (1 / m_train) * X_train.T @ (predict(X_train, theta) - y_train)
+        theta -= learning_rate * gradients
+        
+        train_cost = compute_cost(X_train, y_train, theta)
+        val_cost = compute_cost(X_val, y_val, theta)
+        
+        train_costs.append(train_cost)
+        val_costs.append(val_cost)
+        
+        if i % 100 == 0:
+            print(f"Iteration {i}: Training cost = {train_cost}, Validation cost = {val_cost}")
+    
+    return theta, train_costs, val_costs
+
+# Initialize parameters
+initial_theta = np.zeros(X_train_scaled.shape[1])
+learning_rate = 0.05
+iterations = 1000
+
+# Train the model using gradient descent
+theta, train_cost_history, val_cost_history = gradient_descent(
+    X_train_scaled, y_train, X_val_scaled, y_val, initial_theta, learning_rate, iterations
+)
+
+print(f"Optimal parameters: {theta}")
+
+# Plot training and validation losses
+plt.figure(figsize=(10, 6))
+plt.plot(train_cost_history, label='Training Loss')
+plt.plot(val_cost_history, label='Validation Loss')
+plt.xlabel('Iterations')
+plt.ylabel('Cost')
+plt.title('Training and Validation Loss Over Iterations')
+plt.legend()
+plt.show()
+#2a
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
+
+# Load the housing data
+data = pd.read_csv('Housing.csv')
+
+# Define features and target variable
+features = ['area', 'bedrooms', 'bathrooms', 'stories', 'parking']
+target = 'price'
+X = data[features].values
+y = data[target].values
+
+# Split the data into training and evaluation sets
+X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Hypothesis function to compute predictions
+def hypothesis(theta, X):
+    return np.dot(X, theta)
+
+# Cost function to compute mean squared error
+def cost_function(theta, X, y):
+    m = len(y)
+    return (1/(2*m)) * np.sum((hypothesis(theta, X) - y) ** 2)
+
+# Gradient descent function to optimize parameters
+def gradient_descent(X_train, y_train, X_val, y_val, theta, learning_rate, iterations):
+    m_train = len(y_train)
+    cost_history_train = []
+    cost_history_val = []
+
+    for i in range(iterations):
+        gradients = (1/m_train) * np.dot(X_train.T, (hypothesis(theta, X_train) - y_train))
+        theta = theta - learning_rate * gradients
+        cost_train = cost_function(theta, X_train, y_train)
+        cost_val = cost_function(theta, X_val, y_val)
+        cost_history_train.append(cost_train)
+        cost_history_val.append(cost_val)
+        
+        if i % 100 == 0:
+            print(f"Iteration {i}: Training cost = {cost_train}, Evaluation cost = {cost_val}")
+    
+    return theta, cost_history_train, cost_history_val
+
+# Train and evaluate the model
+def train_and_evaluate(X_train, y_train, X_val, y_val, learning_rate=0.05, iterations=1000):
+    theta_init = np.zeros(X_train.shape[1])
+    theta, cost_history_train, cost_history_val = gradient_descent(X_train, y_train, X_val, y_val, theta_init, learning_rate, iterations)
+    return theta, cost_history_train, cost_history_val
+
+# Normalize the features
+scaler_norm = MinMaxScaler()
+X_train_norm = scaler_norm.fit_transform(X_train)
+X_val_norm = scaler_norm.transform(X_val)
+X_train_norm = np.c_[np.ones(X_train_norm.shape[0]), X_train_norm]
+X_val_norm = np.c_[np.ones(X_val_norm.shape[0]), X_val_norm]
+
+# Standardize the features
+scaler_std = StandardScaler()
+X_train_std = scaler_std.fit_transform(X_train)
+X_val_std = scaler_std.transform(X_val)
+X_train_std = np.c_[np.ones(X_train_std.shape[0]), X_train_std]
+X_val_std = np.c_[np.ones(X_val_std.shape[0]), X_val_std]
+
+# Train and evaluate with normalized features
+theta_norm, cost_history_train_norm, cost_history_val_norm = train_and_evaluate(X_train_norm, y_train, X_val_norm, y_val)
+
+# Train and evaluate with standardized features
+theta_std, cost_history_train_std, cost_history_val_std = train_and_evaluate(X_train_std, y_train, X_val_std, y_val)
+
+# Plot training and evaluation losses
+plt.figure(figsize=(14, 8))
+plt.plot(range(len(cost_history_train_norm)), cost_history_train_norm, label='Training Loss (Normalized)')
+plt.plot(range(len(cost_history_val_norm)), cost_history_val_norm, label='Evaluation Loss (Normalized)')
+plt.plot(range(len(cost_history_train_std)), cost_history_train_std, label='Training Loss (Standardized)')
+plt.plot(range(len(cost_history_val_std)), cost_history_val_std, label='Evaluation Loss (Standardized)')
+plt.xlabel('Iterations')
+plt.ylabel('Cost')
+plt.title('Training and Evaluation Losses for Normalized and Standardized Features')
+plt.legend()
+plt.show()
+
+# Print final training and evaluation losses
+print(f"Final Training Loss (Normalized): {cost_history_train_norm[-1]}")
+print(f"Final Evaluation Loss (Normalized): {cost_history_val_norm[-1]}")
+print(f"Final Training Loss (Standardized): {cost_history_train_std[-1]}")
+print(f"Final Evaluation Loss (Standardized): {cost_history_val_std[-1]}")
+
+# Baseline losses (replace with actual values if known)
+final_train_loss_baseline = 1e7  # placeholder value
+final_eval_loss_baseline = 1e7  # placeholder value
+print(f"Final Training Loss (Baseline): {final_train_loss_baseline}")
+print(f"Final Evaluation Loss (Baseline): {final_eval_loss_baseline}")
+
+# Determine the best method
+best_method = 'Baseline'
+best_train_loss = final_train_loss_baseline
+
+if cost_history_train_norm[-1] < best_train_loss:
+    best_method = 'Normalization'
+    best_train_loss = cost_history_train_norm[-1]
+
+if cost_history_train_std[-1] < best_train_loss:
+    best_method = 'Standardization'
+    best_train_loss = cost_history_train_std[-1]
+
+print(f"The best method for training is: {best_method} with a training loss of: {best_train_loss}")
+#2b
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
+
+# Load the housing data
+data = pd.read_csv('Housing.csv')
+
+# Define features and target variable
+features = ['area', 'bedrooms', 'bathrooms', 'stories', 'mainroad', 
+            'guestroom', 'basement', 'hotwaterheating', 'airconditioning', 
+            'parking', 'prefarea']
+target = 'price'
+
+# Convert categorical features to binary
+binary_features = ['mainroad', 'guestroom', 'basement', 'hotwaterheating', 'airconditioning', 'prefarea']
+for feature in binary_features:
+    data[feature] = data[feature].map({'yes': 1, 'no': 0})
+
+# Extract features and target
+X = data[features].values
+y = data[target].values
+
+# Split the data into training and evaluation sets
+X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Hypothesis function to compute predictions
+def hypothesis(theta, X):
+    return np.dot(X, theta)
+
+# Cost function to compute mean squared error
+def cost_function(theta, X, y):
+    m = len(y)
+    return (1/(2*m)) * np.sum((hypothesis(theta, X) - y) ** 2)
+
+# Gradient descent function to optimize parameters
+def gradient_descent(X_train, y_train, X_val, y_val, theta, learning_rate, iterations):
+    m_train = len(y_train)
+    cost_history_train = []
+    cost_history_val = []
+
+    for i in range(iterations):
+        gradients = (1/m_train) * np.dot(X_train.T, (hypothesis(theta, X_train) - y_train))
+        theta -= learning_rate * gradients
+        cost_train = cost_function(theta, X_train, y_train)
+        cost_val = cost_function(theta, X_val, y_val)
+        cost_history_train.append(cost_train)
+        cost_history_val.append(cost_val)
+        
+        if i % 100 == 0:
+            print(f"Iteration {i}: Training cost = {cost_train}, Evaluation cost = {cost_val}")
+    
+    return theta, cost_history_train, cost_history_val
+
+# Train and evaluate the model
+def train_and_evaluate(X_train, y_train, X_val, y_val, learning_rate=0.05, iterations=1000):
+    theta_init = np.zeros(X_train.shape[1])
+    theta, cost_history_train, cost_history_val = gradient_descent(X_train, y_train, X_val, y_val, theta_init, learning_rate, iterations)
+    return theta, cost_history_train, cost_history_val
+
+# Normalize the features
+scaler_norm = MinMaxScaler()
+X_train_norm = scaler_norm.fit_transform(X_train)
+X_val_norm = scaler_norm.transform(X_val)
+X_train_norm = np.c_[np.ones(X_train_norm.shape[0]), X_train_norm]
+X_val_norm = np.c_[np.ones(X_val_norm.shape[0]), X_val_norm]
+
+# Standardize the features
+scaler_std = StandardScaler()
+X_train_std = scaler_std.fit_transform(X_train)
+X_val_std = scaler_std.transform(X_val)
+X_train_std = np.c_[np.ones(X_train_std.shape[0]), X_train_std]
+X_val_std = np.c_[np.ones(X_val_std.shape[0]), X_val_std]
+
+# Train and evaluate with normalized features
+theta_norm, cost_history_train_norm, cost_history_val_norm = train_and_evaluate(X_train_norm, y_train, X_val_norm, y_val)
+
+# Train and evaluate with standardized features
+theta_std, cost_history_train_std, cost_history_val_std = train_and_evaluate(X_train_std, y_train, X_val_std, y_val)
+
+# Plot training and evaluation losses
+plt.figure(figsize=(14, 8))
+plt.plot(range(len(cost_history_train_norm)), cost_history_train_norm, label='Training Loss (Normalized)')
+plt.plot(range(len(cost_history_val_norm)), cost_history_val_norm, label='Evaluation Loss (Normalized)')
+plt.plot(range(len(cost_history_train_std)), cost_history_train_std, label='Training Loss (Standardized)')
+plt.plot(range(len(cost_history_val_std)), cost_history_val_std, label='Evaluation Loss (Standardized)')
+plt.xlabel('Iterations')
+plt.ylabel('Cost')
+plt.title('Training and Evaluation Losses for Normalized and Standardized Features')
+plt.legend()
+plt.show()
+
+# Print final training and evaluation losses
+print(f"Final Training Loss (Normalized): {cost_history_train_norm[-1]}")
+print(f"Final Evaluation Loss (Normalized): {cost_history_val_norm[-1]}")
+print(f"Final Training Loss (Standardized): {cost_history_train_std[-1]}")
+print(f"Final Evaluation Loss (Standardized): {cost_history_val_std[-1]}")
+
+# Baseline losses (replace with actual values if known)
+final_train_loss_baseline = 1e7  # placeholder value
+final_eval_loss_baseline = 1e7  # placeholder value
+print(f"Final Training Loss (Baseline): {final_train_loss_baseline}")
+print(f"Final Evaluation Loss (Baseline): {final_eval_loss_baseline}")
+
+# Determine the best method
+best_method = 'Baseline'
+best_train_loss = final_train_loss_baseline
+
+if cost_history_train_norm[-1] < best_train_loss:
+    best_method = 'Normalization'
+    best_train_loss = cost_history_train_norm[-1]
+
+if cost_history_train_std[-1] < best_train_loss:
+    best_method = 'Standardization'
+    best_train_loss = cost_history_train_std[-1]
+
+print(f"The best method for training is: {best_method} with a training loss of: {best_train_loss}")
+#3a
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+
+# Load the housing data
+data = pd.read_csv('Housing.csv')
+
+# Define features and target variable
+features = ['area', 'bedrooms', 'bathrooms', 'stories', 'mainroad', 
+            'guestroom', 'basement', 'hotwaterheating', 'airconditioning', 
+            'parking', 'prefarea']
+target = 'price'
+
+# Convert categorical features to binary
+binary_features = ['mainroad', 'guestroom', 'basement', 'hotwaterheating', 'airconditioning', 'prefarea']
+for feature in binary_features:
+    data[feature] = data[feature].map({'yes': 1, 'no': 0})
+
+# Extract features and target
+X = data[features].values
+y = data[target].values
+
+# Split the data into training and evaluation sets
+X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Standardize the features
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_val_scaled = scaler.transform(X_val)
+
+# Add a column of ones to include the intercept term
+X_train_scaled = np.c_[np.ones(X_train_scaled.shape[0]), X_train_scaled]
+X_val_scaled = np.c_[np.ones(X_val_scaled.shape[0]), X_val_scaled]
+
+# Hypothesis function to compute predictions
+def hypothesis(theta, X):
+    return np.dot(X, theta)
+
+# Cost function with regularization to compute mean squared error
+def cost_function_reg(theta, X, y, lambda_):
+    m = len(y)
+    regularization = (lambda_ / (2 * m)) * np.sum(theta[1:] ** 2)
+    return (1/(2*m)) * np.sum((hypothesis(theta, X) - y) ** 2) + regularization
+
+# Gradient descent function with regularization to optimize parameters
+def gradient_descent_reg(X_train, y_train, X_val, y_val, theta, learning_rate, iterations, lambda_):
+    m_train = len(y_train)
+    cost_history_train = []
+    cost_history_val = []
+
+    for i in range(iterations):
+        gradients = (1/m_train) * np.dot(X_train.T, (hypothesis(theta, X_train) - y_train))
+        gradients[1:] += (lambda_ / m_train) * theta[1:]
+        theta -= learning_rate * gradients
+        
+        cost_train = cost_function_reg(theta, X_train, y_train, lambda_)
+        cost_val = cost_function_reg(theta, X_val, y_val, lambda_)
+        
+        cost_history_train.append(cost_train)
+        cost_history_val.append(cost_val)
+        
+        if i % 100 == 0:
+            print(f"Iteration {i}: Training cost = {cost_train}, Evaluation cost = {cost_val}")
+    
+    return theta, cost_history_train, cost_history_val
+
+# Initialize parameters for the model
+theta_init = np.zeros(X_train_scaled.shape[1])
+learning_rate = 0.05
+iterations = 1000
+lambda_ = 1
+
+# Train the model using gradient descent with regularization
+theta_reg, cost_history_train_reg, cost_history_val_reg = gradient_descent_reg(
+    X_train_scaled, y_train, X_val_scaled, y_val, theta_init, learning_rate, iterations, lambda_
+)
+
+print(f"The best parameters (theta) found are: {theta_reg}")
+
+# Plot training and evaluation losses with regularization
+plt.figure(figsize=(10, 6))
+plt.plot(range(iterations), cost_history_train_reg, label='Training Loss (Regularization)')
+plt.plot(range(iterations), cost_history_val_reg, label='Evaluation Loss (Regularization)')
+plt.xlabel('Iterations')
+plt.ylabel('Cost')
+plt.title('Training and Evaluation Losses with Regularization')
+plt.legend()
+plt.show()
+
+# Plot comparison of training and evaluation losses
+plt.figure(figsize=(10, 6))
+plt.plot(range(iterations), cost_history_train_reg, label='Training Loss (Regularization)', linestyle='--')
+plt.plot(range(iterations), cost_history_val_reg, label='Evaluation Loss (Regularization)', linestyle='--')
+plt.xlabel('Iterations')
+plt.ylabel('Cost')
+plt.title('Comparison of Training and Evaluation Losses')
+plt.legend()
+plt.show()
+#3b
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
+
+# Load the housing data
+data = pd.read_csv('Housing.csv')
+
+# Define features and target variable
+features = ['area', 'bedrooms', 'bathrooms', 'stories', 'mainroad', 
+            'guestroom', 'basement', 'hotwaterheating', 'airconditioning', 
+            'parking', 'prefarea']
+target = 'price'
+
+# Convert categorical features to binary
+binary_features = ['mainroad', 'guestroom', 'basement', 'hotwaterheating', 'airconditioning', 'prefarea']
+for feature in binary_features:
+    data[feature] = data[feature].map({'yes': 1, 'no': 0})
+
+# Extract features and target
+X = data[features].values
+y = data[target].values
+
+# Split the data into training and evaluation sets
+X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Standardize the features
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_val_scaled = scaler.transform(X_val)
+
+# Add a column of ones to include the intercept term
+X_train_scaled = np.c_[np.ones(X_train_scaled.shape[0]), X_train_scaled]
+X_val_scaled = np.c_[np.ones(X_val_scaled.shape[0]), X_val_scaled]
+
+# Hypothesis function to compute predictions
+def hypothesis(theta, X):
+    return np.dot(X, theta)
+
+# Cost function with regularization to compute mean squared error
+def cost_function_reg(theta, X, y, lambda_):
+    m = len(y)
+    regularization = (lambda_ / (2 * m)) * np.sum(theta[1:] ** 2)
+    return (1/(2*m)) * np.sum((hypothesis(theta, X) - y) ** 2) + regularization
+
+# Regular cost function without regularization
+def cost_function(theta, X, y):
+    m = len(y)
+    return (1/(2*m)) * np.sum((hypothesis(theta, X) - y) ** 2)
+
+# Gradient descent function with regularization to optimize parameters
+def gradient_descent_reg(X_train, y_train, X_val, y_val, theta, learning_rate, iterations, lambda_):
+    m_train = len(y_train)
+    cost_history_train = []
+    cost_history_val = []
+
+    for i in range(iterations):
+        gradients = (1/m_train) * np.dot(X_train.T, (hypothesis(theta, X_train) - y_train))
+        gradients[1:] += (lambda_ / m_train) * theta[1:]
+        theta -= learning_rate * gradients
+        
+        cost_train = cost_function_reg(theta, X_train, y_train, lambda_)
+        cost_val = cost_function(theta, X_val, y_val)
+        
+        cost_history_train.append(cost_train)
+        cost_history_val.append(cost_val)
+        
+        if i % 100 == 0:
+            print(f"Iteration {i}: Training cost = {cost_train}, Evaluation cost = {cost_val}")
+    
+    return theta, cost_history_train, cost_history_val
+
+# Gradient descent function without regularization
+def gradient_descent(X_train, y_train, X_val, y_val, theta, learning_rate, iterations):
+    m_train = len(y_train)
+    cost_history_train = []
+    cost_history_val = []
+
+    for i in range(iterations):
+        gradients = (1/m_train) * np.dot(X_train.T, (hypothesis(theta, X_train) - y_train))
+        theta -= learning_rate * gradients
+        
+        cost_train = cost_function(theta, X_train, y_train)
+        cost_val = cost_function(theta, X_val, y_val)
+        
+        cost_history_train.append(cost_train)
+        cost_history_val.append(cost_val)
+        
+        if i % 100 == 0:
+            print(f"Iteration {i}: Training cost = {cost_train}, Evaluation cost = {cost_val}")
+    
+    return theta, cost_history_train, cost_history_val
+
+# Initialize parameters for the model
+theta_init = np.zeros(X_train_scaled.shape[1])
+learning_rate = 0.05
+iterations = 1000
+lambda_ = 1
+
+# Train the model using gradient descent with regularization
+theta_reg, cost_history_train_reg, cost_history_val_reg = gradient_descent_reg(
+    X_train_scaled, y_train, X_val_scaled, y_val, theta_init, learning_rate, iterations, lambda_
+)
+
+# Train the model using gradient descent without regularization
+theta_best, cost_history_train_best, cost_history_val_best = gradient_descent(
+    X_train_scaled, y_train, X_val_scaled, y_val, theta_init, learning_rate, iterations
+)
+
+print(f"The best parameters (theta) found with regularization are: {theta_reg}")
+
+# Plot training and evaluation losses with regularization
+plt.figure(figsize=(10, 6))
+plt.plot(range(iterations), cost_history_train_reg, label='Training Loss (Regularization)')
+plt.plot(range(iterations), cost_history_val_reg, label='Evaluation Loss (Regularization)')
+plt.xlabel('Iterations')
+plt.ylabel('Cost')
+plt.title('Training and Evaluation Losses with Regularization')
+plt.legend()
+plt.show()
+
+# Plot comparison of training and evaluation losses
+plt.figure(figsize=(10, 6))
+plt.plot(range(iterations), cost_history_train_best, label='Training Loss (Best Scaling)')
+plt.plot(range(iterations), cost_history_val_best, label='Evaluation Loss (Best Scaling)')
+plt.plot(range(iterations), cost_history_train_reg, label='Training Loss (Regularized)', linestyle='--')
+plt.plot(range(iterations), cost_history_val_reg, label='Evaluation Loss (Regularized)', linestyle='--')
+plt.xlabel('Iterations')
+plt.ylabel('Cost')
+plt.title('Comparison of Training and Evaluation Losses')
+plt.legend()
+plt.show()
+
+
 
