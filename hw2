@@ -1,0 +1,79 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+
+# Load the housing data
+data = pd.read_csv('Housing.csv')
+
+# Select relevant features and the target variable
+feature_cols = ['area', 'bedrooms', 'bathrooms', 'stories', 'parking']
+target_col = 'price'
+X = data[feature_cols].values
+y = data[target_col].values
+
+# Split the dataset into training and evaluation sets
+X_train, X_eval, y_train, y_eval = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Standardize the feature values
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_eval_scaled = scaler.transform(X_eval)
+
+# Add a column of ones to the features to account for the intercept term
+X_train_scaled = np.c_[np.ones(X_train_scaled.shape[0]), X_train_scaled]
+X_eval_scaled = np.c_[np.ones(X_eval_scaled.shape[0]), X_eval_scaled]
+
+# Define the linear hypothesis function
+def predict(X, theta):
+    return X @ theta
+
+# Define the cost function (mean squared error)
+def compute_cost(X, y, theta):
+    m = len(y)
+    return (1 / (2 * m)) * np.sum((predict(X, theta) - y) ** 2)
+
+# Implement the gradient descent algorithm
+def perform_gradient_descent(X_train, y_train, X_eval, y_eval, theta, learning_rate, num_iters):
+    m_train = len(y_train)
+    train_costs = []
+    eval_costs = []
+
+    for i in range(num_iters):
+        gradients = (1 / m_train) * (X_train.T @ (predict(X_train, theta) - y_train))
+        theta -= learning_rate * gradients
+        
+        train_cost = compute_cost(X_train, y_train, theta)
+        eval_cost = compute_cost(X_eval, y_eval, theta)
+        
+        train_costs.append(train_cost)
+        eval_costs.append(eval_cost)
+        
+        if i % 100 == 0:
+            print(f"Iteration {i}: Training cost = {train_cost}, Evaluation cost = {eval_cost}")
+    
+    return theta, train_costs, eval_costs
+
+# Initialize parameters for the model
+initial_theta = np.zeros(X_train_scaled.shape[1])
+learning_rate = 0.05
+iterations = 1000
+
+# Train the linear regression model
+theta_final, training_cost_history, evaluation_cost_history = perform_gradient_descent(
+    X_train_scaled, y_train, X_eval_scaled, y_eval, initial_theta, learning_rate, iterations
+)
+
+print(f"Optimal parameters found: {theta_final}")
+
+# Plot the cost history
+plt.figure(figsize=(10, 6))
+plt.plot(training_cost_history, label='Training Loss')
+plt.plot(evaluation_cost_history, label='Evaluation Loss')
+plt.xlabel('Iterations')
+plt.ylabel('Cost')
+plt.title('Training and Evaluation Loss Over Iterations')
+plt.legend()
+plt.show()
+
