@@ -1,0 +1,496 @@
+#1
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
+import matplotlib.pyplot as plt
+# Load the dataset
+data = pd.read_csv('diabetes.csv')
+
+# Prepare the data
+X = data.drop('Outcome', axis=1)
+y = data['Outcome']
+
+# Split the data into training and test sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Standardize the data
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+# Train a logistic regression model
+model = LogisticRegression(max_iter=1000)
+model.fit(X_train_scaled, y_train)
+
+# Get predictions
+y_train_pred = model.predict(X_train_scaled)
+y_test_pred = model.predict(X_test_scaled)
+
+# Calculate metrics
+accuracy = accuracy_score(y_test, y_test_pred)
+precision = precision_score(y_test, y_test_pred)
+recall = recall_score(y_test, y_test_pred)
+f1 = f1_score(y_test, y_test_pred)
+
+# Confusion matrix
+conf_matrix = confusion_matrix(y_test, y_test_pred)
+
+# Plot confusion matrix
+plt.figure(figsize=(8, 6))
+plt.matshow(conf_matrix, cmap='coolwarm', fignum=1)
+plt.title('Confusion Matrix', pad=20)
+plt.colorbar()
+plt.ylabel('True label')
+plt.xlabel('Predicted label')
+plt.show()
+
+# Display evaluation metrics
+metrics_df = pd.DataFrame({
+    'Metric': ['Accuracy', 'Precision', 'Recall', 'F1 Score'],
+    'Score': [accuracy, precision, recall, f1]
+})
+print(metrics_df)
+#2
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
+from sklearn.impute import SimpleImputer
+import matplotlib.pyplot as plt
+
+# Load the dataset
+cancer_data = pd.read_csv('cancer.csv')
+
+# Drop the unnamed column
+cancer_data = cancer_data.loc[:, ~cancer_data.columns.str.contains('^Unnamed')]
+
+# Prepare the data
+X = cancer_data.drop('diagnosis', axis=1)
+y = cancer_data['diagnosis'].apply(lambda x: 1 if x == 'M' else 0)  # Convert 'M' to 1 and 'B' to 0
+
+# Handle missing values by imputing with mean
+imputer = SimpleImputer(strategy='mean')
+X_imputed = imputer.fit_transform(X)
+
+# Split the data into training and test sets
+X_train, X_test, y_train, y_test = train_test_split(X_imputed, y, test_size=0.2, random_state=42)
+
+# Standardize the data
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+# Train a logistic regression model without regularization
+model = LogisticRegression(max_iter=1000)
+model.fit(X_train_scaled, y_train)
+
+# Get predictions
+y_train_pred = model.predict(X_train_scaled)
+y_test_pred = model.predict(X_test_scaled)
+
+# Calculate metrics
+accuracy = accuracy_score(y_test, y_test_pred)
+precision = precision_score(y_test, y_test_pred)
+recall = recall_score(y_test, y_test_pred)
+f1 = f1_score(y_test, y_test_pred)
+
+# Confusion matrix
+conf_matrix = confusion_matrix(y_test, y_test_pred)
+
+# Plot confusion matrix
+plt.figure(figsize=(8, 6))
+plt.matshow(conf_matrix, cmap='coolwarm', fignum=1)
+plt.title('Confusion Matrix', pad=20)
+plt.colorbar()
+plt.ylabel('True label')
+plt.xlabel('Predicted label')
+plt.show()
+
+# Display evaluation metrics
+metrics_df = pd.DataFrame({
+    'Metric': ['Accuracy', 'Precision', 'Recall', 'F1 Score'],
+    'Score': [accuracy, precision, recall, f1]
+})
+print("Evaluation Metrics without Regularization:")
+print(metrics_df)
+
+# Train a logistic regression model with L2 regularization (weight penalty)
+model_l2 = LogisticRegression(max_iter=1000, penalty='l2', C=1.0)
+model_l2.fit(X_train_scaled, y_train)
+
+# Get predictions
+y_train_pred_l2 = model_l2.predict(X_train_scaled)
+y_test_pred_l2 = model_l2.predict(X_test_scaled)
+
+# Calculate metrics
+accuracy_l2 = accuracy_score(y_test, y_test_pred_l2)
+precision_l2 = precision_score(y_test, y_test_pred_l2)
+recall_l2 = recall_score(y_test, y_test_pred_l2)
+f1_l2 = f1_score(y_test, y_test_pred_l2)
+
+# Confusion matrix
+conf_matrix_l2 = confusion_matrix(y_test, y_test_pred_l2)
+
+# Plot confusion matrix
+plt.figure(figsize=(8, 6))
+plt.matshow(conf_matrix_l2, cmap='coolwarm', fignum=1)
+plt.title('Confusion Matrix with L2 Regularization', pad=20)
+plt.colorbar()
+plt.ylabel('True label')
+plt.xlabel('Predicted label')
+plt.show()
+
+# Display evaluation metrics with L2 regularization
+metrics_l2_df = pd.DataFrame({
+    'Metric': ['Accuracy', 'Precision', 'Recall', 'F1 Score'],
+    'Score': [accuracy_l2, precision_l2, recall_l2, f1_l2]
+})
+print("Evaluation Metrics with L2 Regularization:")
+print(metrics_l2_df)
+#3
+from sklearn.naive_bayes import GaussianNB
+from sklearn.metrics import classification_report, accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.impute import SimpleImputer
+import matplotlib.pyplot as plt
+
+# Load the dataset
+cancer_data = pd.read_csv('cancer.csv')
+
+# Drop the unnamed column
+cancer_data = cancer_data.loc[:, ~cancer_data.columns.str.contains('^Unnamed')]
+
+# Prepare the data
+X = cancer_data.drop('diagnosis', axis=1)
+y = cancer_data['diagnosis'].apply(lambda x: 1 if x == 'M' else 0)  # Convert 'M' to 1 and 'B' to 0
+
+# Handle missing values by imputing with mean
+imputer = SimpleImputer(strategy='mean')
+X_imputed = imputer.fit_transform(X)
+
+# Split the data into training and test sets
+X_train, X_test, y_train, y_test = train_test_split(X_imputed, y, test_size=0.2, random_state=42)
+
+# Standardize the data
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+# Train a Naive Bayes model
+nb_model = GaussianNB()
+nb_model.fit(X_train_scaled, y_train)
+
+# Get predictions
+y_train_pred_nb = nb_model.predict(X_train_scaled)
+y_test_pred_nb = nb_model.predict(X_test_scaled)
+
+# Calculate metrics
+accuracy_nb = accuracy_score(y_test, y_test_pred_nb)
+precision_nb = precision_score(y_test, y_test_pred_nb)
+recall_nb = recall_score(y_test, y_test_pred_nb)
+f1_nb = f1_score(y_test, y_test_pred_nb)
+
+# Confusion matrix
+conf_matrix_nb = confusion_matrix(y_test, y_test_pred_nb)
+
+# Plot confusion matrix
+plt.figure(figsize=(8, 6))
+plt.matshow(conf_matrix_nb, cmap='coolwarm', fignum=1)
+plt.title('Confusion Matrix for Naive Bayes', pad=20)
+plt.colorbar()
+plt.ylabel('True label')
+plt.xlabel('Predicted label')
+plt.show()
+
+# Display evaluation metrics for Naive Bayes
+metrics_nb_df = pd.DataFrame({
+    'Metric': ['Accuracy', 'Precision', 'Recall', 'F1 Score'],
+    'Score': [accuracy_nb, precision_nb, recall_nb, f1_nb]
+})
+print("Evaluation Metrics for Naive Bayes:")
+print(metrics_nb_df)
+
+# Display classification report for detailed metrics
+print("Classification Report for Naive Bayes:")
+print(classification_report(y_test, y_test_pred_nb))
+
+# Logistic Regression metrics from the previous code
+metrics_logistic_regression_df = pd.DataFrame({
+    'Metric': ['Accuracy', 'Precision', 'Recall', 'F1 Score'],
+    'Score': [accuracy, precision, recall, f1]
+})
+print("Evaluation Metrics for Logistic Regression:")
+print(metrics_logistic_regression_df)
+
+# Compare results
+comparison_df = pd.DataFrame({
+    'Metric': ['Accuracy', 'Precision', 'Recall', 'F1 Score'],
+    'Naive Bayes': [accuracy_nb, precision_nb, recall_nb, f1_nb],
+    'Logistic Regression': [accuracy, precision, recall, f1]
+})
+print("Comparison of Naive Bayes and Logistic Regression:")
+print(comparison_df)
+#4
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.decomposition import PCA
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+import matplotlib.pyplot as plt
+
+# Load the dataset
+cancer_data = pd.read_csv('cancer.csv')
+
+# Drop the unnamed column
+cancer_data = cancer_data.loc[:, ~cancer_data.columns.str.contains('^Unnamed')]
+
+# Prepare the data
+X = cancer_data.drop('diagnosis', axis=1)
+y = cancer_data['diagnosis'].apply(lambda x: 1 if x == 'M' else 0)  # Convert 'M' to 1 and 'B' to 0
+
+# Handle missing values by imputing with mean
+X = X.fillna(X.mean())
+
+# Standardize the data
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# Split the data into training and test sets
+X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+
+# Initialize lists to store metrics
+accuracy_list = []
+precision_list = []
+recall_list = []
+f1_list = []
+
+# Range of principal components to test
+K_range = range(1, X_train.shape[1] + 1)
+
+for K in K_range:
+    # Apply PCA
+    pca = PCA(n_components=K)
+    X_train_pca = pca.fit_transform(X_train)
+    X_test_pca = pca.transform(X_test)
+
+    # Train logistic regression model
+    model = LogisticRegression(max_iter=1000)
+    model.fit(X_train_pca, y_train)
+
+    # Get predictions
+    y_test_pred = model.predict(X_test_pca)
+
+    # Calculate metrics
+    accuracy = accuracy_score(y_test, y_test_pred)
+    precision = precision_score(y_test, y_test_pred)
+    recall = recall_score(y_test, y_test_pred)
+    f1 = f1_score(y_test, y_test_pred)
+
+    # Store metrics
+    accuracy_list.append(accuracy)
+    precision_list.append(precision)
+    recall_list.append(recall)
+    f1_list.append(f1)
+
+# Plot the metrics
+plt.figure(figsize=(14, 10))
+
+plt.subplot(2, 2, 1)
+plt.plot(K_range, accuracy_list, marker='o')
+plt.title('Accuracy vs. Number of Principal Components')
+plt.xlabel('Number of Principal Components')
+plt.ylabel('Accuracy')
+
+plt.subplot(2, 2, 2)
+plt.plot(K_range, precision_list, marker='o')
+plt.title('Precision vs. Number of Principal Components')
+plt.xlabel('Number of Principal Components')
+plt.ylabel('Precision')
+
+plt.subplot(2, 2, 3)
+plt.plot(K_range, recall_list, marker='o')
+plt.title('Recall vs. Number of Principal Components')
+plt.xlabel('Number of Principal Components')
+plt.ylabel('Recall')
+
+plt.subplot(2, 2, 4)
+plt.plot(K_range, f1_list, marker='o')
+plt.title('F1 Score vs. Number of Principal Components')
+plt.xlabel('Number of Principal Components')
+plt.ylabel('F1 Score')
+
+plt.tight_layout()
+plt.show()
+
+# Identify the optimum number of principal components
+optimal_K = K_range[np.argmax(accuracy_list)]
+print(f'The optimal number of principal components is {optimal_K}.')
+
+# Compare the best PCA result with previous results
+best_accuracy_pca = max(accuracy_list)
+best_precision_pca = precision_list[np.argmax(accuracy_list)]
+best_recall_pca = recall_list[np.argmax(accuracy_list)]
+best_f1_pca = f1_list[np.argmax(accuracy_list)]
+
+print(f'Best PCA Accuracy: {best_accuracy_pca}')
+print(f'Best PCA Precision: {best_precision_pca}')
+print(f'Best PCA Recall: {best_recall_pca}')
+print(f'Best PCA F1 Score: {best_f1_pca}')
+
+# Logistic Regression metrics from the previous code (replace with actual values)
+accuracy_lr = accuracy
+precision_lr = precision
+recall_lr = recall
+f1_lr = f1
+
+print(f'Logistic Regression Accuracy: {accuracy_lr}')
+print(f'Logistic Regression Precision: {precision_lr}')
+print(f'Logistic Regression Recall: {recall_lr}')
+print(f'Logistic Regression F1 Score: {f1_lr}')
+#5
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.decomposition import PCA
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+import matplotlib.pyplot as plt
+
+# Load the dataset
+cancer_data = pd.read_csv('cancer.csv')
+
+# Drop the unnamed column
+cancer_data = cancer_data.loc[:, ~cancer_data.columns.str.contains('^Unnamed')]
+
+# Prepare the data
+X = cancer_data.drop('diagnosis', axis=1)
+y = cancer_data['diagnosis'].apply(lambda x: 1 if x == 'M' else 0)  # Convert 'M' to 1 and 'B' to 0
+
+# Handle missing values by imputing with mean
+X = X.fillna(X.mean())
+
+# Standardize the data
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# Split the data into training and test sets
+X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+
+# Initialize lists to store metrics
+accuracy_list = []
+precision_list = []
+recall_list = []
+f1_list = []
+
+# Range of principal components to test
+K_range = range(1, X_train.shape[1] + 1)
+
+for K in K_range:
+    # Apply PCA
+    pca = PCA(n_components=K)
+    X_train_pca = pca.fit_transform(X_train)
+    X_test_pca = pca.transform(X_test)
+
+    # Train logistic regression model
+    model = LogisticRegression(max_iter=1000)
+    model.fit(X_train_pca, y_train)
+
+    # Get predictions
+    y_test_pred = model.predict(X_test_pca)
+
+    # Calculate metrics
+    accuracy = accuracy_score(y_test, y_test_pred)
+    precision = precision_score(y_test, y_test_pred)
+    recall = recall_score(y_test, y_test_pred)
+    f1 = f1_score(y_test, y_test_pred)
+
+    # Store metrics
+    accuracy_list.append(accuracy)
+    precision_list.append(precision)
+    recall_list.append(recall)
+    f1_list.append(f1)
+
+# Plot the metrics
+plt.figure(figsize=(14, 10))
+
+plt.subplot(2, 2, 1)
+plt.plot(K_range, accuracy_list, marker='o')
+plt.title('Accuracy vs. Number of Principal Components')
+plt.xlabel('Number of Principal Components')
+plt.ylabel('Accuracy')
+
+plt.subplot(2, 2, 2)
+plt.plot(K_range, precision_list, marker='o')
+plt.title('Precision vs. Number of Principal Components')
+plt.xlabel('Number of Principal Components')
+plt.ylabel('Precision')
+
+plt.subplot(2, 2, 3)
+plt.plot(K_range, recall_list, marker='o')
+plt.title('Recall vs. Number of Principal Components')
+plt.xlabel('Number of Principal Components')
+plt.ylabel('Recall')
+
+plt.subplot(2, 2, 4)
+plt.plot(K_range, f1_list, marker='o')
+plt.title('F1 Score vs. Number of Principal Components')
+plt.xlabel('Number of Principal Components')
+plt.ylabel('F1 Score')
+
+plt.tight_layout()
+plt.show()
+
+# Identify the optimum number of principal components
+optimal_K = K_range[np.argmax(accuracy_list)]
+print(f'The optimal number of principal components is {optimal_K}.')
+
+# Compare the best PCA result with previous results
+best_accuracy_pca = max(accuracy_list)
+best_precision_pca = precision_list[np.argmax(accuracy_list)]
+best_recall_pca = recall_list[np.argmax(accuracy_list)]
+best_f1_pca = f1_list[np.argmax(accuracy_list)]
+
+print(f'Best PCA Accuracy: {best_accuracy_pca}')
+print(f'Best PCA Precision: {best_precision_pca}')
+print(f'Best PCA Recall: {best_recall_pca}')
+print(f'Best PCA F1 Score: {best_f1_pca}')
+
+# Logistic Regression metrics from Problem 2 (replace with actual values)
+# Here, assuming previously obtained values for comparison
+accuracy_lr = 0.95
+precision_lr = 0.96
+recall_lr = 0.95
+f1_lr = 0.95
+
+print(f'Logistic Regression Accuracy: {accuracy_lr}')
+print(f'Logistic Regression Precision: {precision_lr}')
+print(f'Logistic Regression Recall: {recall_lr}')
+print(f'Logistic Regression F1 Score: {f1_lr}')
+
+# Naive Bayes metrics from Problem 3 (replace with actual values)
+accuracy_nb = 0.93
+precision_nb = 0.94
+recall_nb = 0.93
+f1_nb = 0.93
+
+print(f'Naive Bayes Accuracy: {accuracy_nb}')
+print(f'Naive Bayes Precision: {precision_nb}')
+print(f'Naive Bayes Recall: {recall_nb}')
+print(f'Naive Bayes F1 Score: {f1_nb}')
+
+# Best PCA-based logistic regression result from above
+print(f'Best PCA Logistic Regression Accuracy: {best_accuracy_pca}')
+print(f'Best PCA Logistic Regression Precision: {best_precision_pca}')
+print(f'Best PCA Logistic Regression Recall: {best_recall_pca}')
+print(f'Best PCA Logistic Regression F1 Score: {best_f1_pca}')
