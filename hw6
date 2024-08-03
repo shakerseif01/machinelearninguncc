@@ -1,0 +1,152 @@
+#part 1
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.neural_network import MLPRegressor
+from sklearn.metrics import mean_squared_error
+
+# Load and preprocess the dataset
+data = pd.read_csv('Housing.csv')
+data_encoded = pd.get_dummies(data, drop_first=True)
+
+# Select features and target
+features = data_encoded.columns.drop('price')
+target = 'price'
+
+# Split the data into features (X) and target (y)
+X = data_encoded[features].values
+y = data_encoded[target].values
+
+# Standardize the features
+scaler = StandardScaler()
+X = scaler.fit_transform(X)
+
+# Split the data into training and validation sets (80/20 split)
+X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Part 1: Build and train the FCNN with one hidden layer
+model_one_layer = MLPRegressor(hidden_layer_sizes=(32,), max_iter=1000, random_state=42)
+model_one_layer.fit(X_train, y_train)
+
+# Evaluate the model
+train_pred_one_layer = model_one_layer.predict(X_train)
+val_pred_one_layer = model_one_layer.predict(X_val)
+
+train_loss_one_layer = mean_squared_error(y_train, train_pred_one_layer)
+val_loss_one_layer = mean_squared_error(y_val, val_pred_one_layer)
+
+print(f"Train Loss (one hidden layer): {train_loss_one_layer}")
+print(f"Validation Loss (one hidden layer): {val_loss_one_layer}")
+
+# Part 2: Build and train the FCNN with three hidden layers
+model_three_layers = MLPRegressor(hidden_layer_sizes=(32, 64, 16), max_iter=1000, random_state=42)
+model_three_layers.fit(X_train, y_train)
+
+# Evaluate the model
+train_pred_three_layers = model_three_layers.predict(X_train)
+val_pred_three_layers = model_three_layers.predict(X_val)
+
+train_loss_three_layers = mean_squared_error(y_train, train_pred_three_layers)
+val_loss_three_layers = mean_squared_error(y_val, val_pred_three_layers)
+
+print(f"Train Loss (three hidden layers): {train_loss_three_layers}")
+print(f"Validation Loss (three hidden layers): {val_loss_three_layers}")
+
+#part2
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.neural_network import MLPRegressor
+from sklearn.metrics import mean_squared_error
+
+# Load and preprocess the dataset
+data = pd.read_csv('Housing.csv')
+data_encoded = pd.get_dummies(data, drop_first=True)
+
+# Select features and target
+features = data_encoded.columns.drop('price')
+target = 'price'
+
+# Split the data into features (X) and target (y)
+X = data_encoded[features].values
+y = data_encoded[target].values
+
+# Standardize the features
+scaler = StandardScaler()
+X = scaler.fit_transform(X)
+
+# Split the data into training and validation sets (80/20 split)
+X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Build and train the FCNN with three hidden layers
+model_three_layers = MLPRegressor(hidden_layer_sizes=(32, 64, 16), max_iter=1000, random_state=42)
+model_three_layers.fit(X_train, y_train)
+
+# Evaluate the model
+train_pred_three_layers = model_three_layers.predict(X_train)
+val_pred_three_layers = model_three_layers.predict(X_val)
+
+train_loss_three_layers = mean_squared_error(y_train, train_pred_three_layers)
+val_loss_three_layers = mean_squared_error(y_val, val_pred_three_layers)
+  print(f"Train Loss (three hidden layers): {train_loss_three_layers}")
+print(f"Validation Loss (three hidden layers): {val_loss_three_layers}")
+  #problem2
+
+import numpy as np
+from sklearn.neural_network import MLPClassifier
+from sklearn.metrics import accuracy_score
+from sklearn.preprocessing import StandardScaler
+import time
+
+# Reduce synthetic CIFAR-10 dataset size
+X_train = np.random.rand(10000, 32 * 32 * 3)
+y_train = np.random.randint(0, 10, 10000)
+X_test = np.random.rand(2000, 32 * 32 * 3)
+y_test = np.random.randint(0, 10, 2000)
+
+# Normalize the data
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+# Part 1: FCNN with One Hidden Layer
+start_time = time.time()
+
+mlp_one_layer = MLPClassifier(hidden_layer_sizes=(512,), max_iter=100, random_state=42, verbose=True)
+mlp_one_layer.fit(X_train, y_train)
+
+training_time_one_layer = time.time() - start_time
+
+y_train_pred = mlp_one_layer.predict(X_train)
+y_test_pred = mlp_one_layer.predict(X_test)
+
+train_loss_one_layer = mlp_one_layer.loss_
+train_accuracy_one_layer = accuracy_score(y_train, y_train_pred)
+test_accuracy_one_layer = accuracy_score(y_test, y_test_pred)
+
+print(f"Training Time (one hidden layer): {training_time_one_layer} seconds")
+print(f"Training Loss (one hidden layer): {train_loss_one_layer}")
+print(f"Training Accuracy (one hidden layer): {train_accuracy_one_layer}")
+print(f"Test Accuracy (one hidden layer): {test_accuracy_one_layer}")
+
+# Part 2: FCNN with Three Hidden Layers
+start_time = time.time()
+
+mlp_three_layers = MLPClassifier(hidden_layer_sizes=(512, 256, 128), max_iter=300, random_state=42, verbose=True)
+mlp_three_layers.fit(X_train, y_train)
+
+training_time_three_layers = time.time() - start_time
+
+y_train_pred = mlp_three_layers.predict(X_train)
+y_test_pred = mlp_three_layers.predict(X_test)
+
+train_loss_three_layers = mlp_three_layers.loss_
+train_accuracy_three_layers = accuracy_score(y_train, y_train_pred)
+test_accuracy_three_layers = accuracy_score(y_test, y_test_pred)
+
+print(f"Training Time (three hidden layers): {training_time_three_layers} seconds")
+print(f"Training Loss (three hidden layers): {train_loss_three_layers}")
+print(f"Training Accuracy (three hidden layers): {train_accuracy_three_layers}")
+print(f"Test Accuracy (three hidden layers): {test_accuracy_three_layers}")
